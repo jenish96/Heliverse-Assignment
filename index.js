@@ -8,8 +8,9 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api", route);
+
 app.get("/", async (req, res) => {
-    res.send("Hello");
+    res.send("Welcome To User Management Web App");
 })
 
 
