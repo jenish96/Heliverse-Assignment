@@ -8,6 +8,7 @@ const getUsers = async (req, res) => {
         const endIndex = startIndex + perPage;
 
         const data = await User.find();
+        const totalUsers = data.length;
         const totalPages = Math.ceil(data.length / perPage);
         const users = data.slice(startIndex, endIndex);
 
@@ -15,9 +16,19 @@ const getUsers = async (req, res) => {
             page,
             perPage,
             totalPages,
-            totalUsers: users.length,
+            totalUsers,
             users
         });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
+}
+
+const getFilterValues = async (req, res) => {
+    try {
+        const domain = await User.find().distinct("domain");
+        const gender = await User.find().distinct('gender');
+        res.status(200).json({ domain, gender });
     } catch (err) {
         res.status(400).json({ "error": err.message });
     }
@@ -34,13 +45,28 @@ const getUserById = async (req, res) => {
 
 const getUserByName = async (req, res) => {
     try {
-        const user = await User.find({
+        const page = parseInt(req.query.page) || 1;
+        const perPage = parseInt(req.query.perPage) || 20;
+        const startIndex = (page - 1) * perPage;
+        const endIndex = startIndex + perPage;
+
+        const data = await User.find({
             "$or": [
                 { "first_name": { $regex: req.params.name, $options: 'i' } },
                 { "last_name": { $regex: req.params.name, $options: 'i' } }
             ]
         });
-        res.status(200).json({ user });
+        const totalUsers = data.length;
+        const totalPages = Math.ceil(data.length / perPage);
+        const users = data.slice(startIndex, endIndex);
+
+        res.status(200).json({
+            page,
+            perPage,
+            totalPages,
+            totalUsers,
+            users
+        });
     } catch (err) {
         res.status(400).json({ "error": err.message });
     }
@@ -54,8 +80,23 @@ const getFilterUsers = async (req, res) => {
         if (req.query.gender) filters.gender = { $in: req.query.gender.split(',') };
         if (req.query.available) filters.available = req.query.available === 'true';
 
-        const users = await User.find(filters);
-        res.status(200).json({ users });
+        const page = parseInt(req.query.page) || 1;
+        const perPage = parseInt(req.query.perPage) || 20;
+        const startIndex = (page - 1) * perPage;
+        const endIndex = startIndex + perPage;
+
+        const data = await User.find(filters);
+        const totalUsers = data.length;
+        const totalPages = Math.ceil(data.length / perPage);
+        const users = data.slice(startIndex, endIndex);
+
+        res.status(200).json({
+            page,
+            perPage,
+            totalPages,
+            totalUsers,
+            users
+        });
     } catch (err) {
         res.status(400).json({ "error": err.message });
     }
@@ -90,4 +131,4 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { getUsers, newUser, getUserById, updateUser, deleteUser, getUserByName, getFilterUsers }
+module.exports = { getUsers, newUser, getUserById, getFilterValues, updateUser, deleteUser, getUserByName, getFilterUsers }
