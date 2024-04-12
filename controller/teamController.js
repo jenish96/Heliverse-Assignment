@@ -5,12 +5,24 @@ const getTeam = async (req, res) => {
     try {
         const team = await Team.findById(req.params.id).populate('members');
         if (!team) {
-          return res.status(404).json({ error: 'Team not found' });
+            return res.status(404).json({ error: 'Team not found' });
         }
         res.status(200).json({ team });
-      } catch (err) {
+    } catch (err) {
         res.status(500).json({ error: err.message });
-      }
+    }
+}
+
+const getAllTeam = async (req, res) => {
+    try {
+        const team = await Team.find().populate('members');
+        if (!team) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+        res.status(200).json({ team });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 }
 
 const newTeam = async (req, res) => {
@@ -33,4 +45,4 @@ const newTeam = async (req, res) => {
     }
 }
 
-module.exports = { getTeam, newTeam }
+module.exports = { getTeam, getAllTeam, newTeam }
